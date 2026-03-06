@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>AI 기반 SNS 마케팅 컨텐츠과정 - 블로그 협업 워크시트(완성본/무료이미지+이미지삽입+해시태그)</title>
+  <title>AI 블로그 협업 워크시트(완성본) - GitHub Pages + Pollinations Unified + 이미지삽입 + 해시태그</title>
   <style>
     :root{
       --panel:rgba(18,26,51,.96);
@@ -29,6 +29,7 @@
                   linear-gradient(180deg, #060912, #0b1020 65%);
       color:var(--text);
     }
+    a{ color:inherit; }
     .wrap{ max-width:1200px; margin:0 auto; padding:22px; }
     header{
       display:flex; gap:12px; align-items:center; justify-content:space-between;
@@ -38,7 +39,7 @@
     }
     header .title{ display:flex; flex-direction:column; gap:2px; }
     header h1{ font-size:18px; margin:0; letter-spacing:-.2px; }
-    header .sub{ color:var(--muted); font-size:13px; }
+    header .sub{ color:var(--muted); font-size:13px; line-height:1.35; }
     .btn{
       border:1px solid var(--line);
       background:rgba(255,255,255,.06);
@@ -84,7 +85,7 @@
     .badge b{ color:var(--text); }
     .field{ display:grid; gap:8px; margin-top:10px; }
     label{ font-size:13px; color:var(--muted); }
-    input[type="password"], select, textarea{
+    input[type="password"], input[type="text"], select, textarea{
       width:100%;
       padding:10px 12px;
       border-radius:14px;
@@ -176,6 +177,22 @@
       white-space:pre-wrap;
       word-break:break-word;
     }
+    .imgFallback{
+      display:none;
+      padding:10px;
+      color:rgba(255,255,255,.78);
+      font-size:12px;
+      line-height:1.4;
+    }
+    .imgFallback a{
+      display:inline-block;
+      margin-top:6px;
+      padding:6px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.16);
+      background:rgba(255,255,255,.06);
+      text-decoration:none;
+    }
 
     #promptModal{
       display:none;
@@ -225,7 +242,10 @@
     <header>
       <div class="title">
         <h1>AI 블로그 협업 워크시트 (모달 + API + 캘린더 + 글/이미지 자동 생성)</h1>
-        <div class="sub">단일 HTML · DEMO/API · 무료 이미지(Pollinations) · 이미지 삽입 위치 표기 · 해시태그 자동</div>
+        <div class="sub">
+          단일 HTML · DEMO/API · GitHub Pages 실행 안정화<br/>
+          이미지: OpenAI 키 있으면 OpenAI 이미지, 없거나 실패하면 <b>Pollinations Unified(gen.pollinations.ai)</b>로 표시 (pk_ 키 권장)
+        </div>
       </div>
       <div class="row">
         <span class="badge"><b id="modeBadge">DEMO</b><span>모드</span></span>
@@ -266,9 +286,9 @@
                 <button class="btn" id="btnSetMode">모드 적용</button>
               </div>
               <div class="note" style="margin-top:8px;">
-                • DEMO는 호출 없이 결과 형식을 보여줍니다.<br>
-                • API는 OpenAI 키가 필요합니다(오른쪽 패널).<br>
-                • 이미지는 DEMO에서도 <b>무료 이미지(Pollinations)로 표시</b>할 수 있습니다.
+                • DEMO는 네트워크 호출 없이 결과 형식을 보여줍니다.<br>
+                • API는 OpenAI 키가 필요합니다(오른쪽).<br>
+                • 이미지는 DEMO에서도 Pollinations로 표시 가능(권장: pk_ 키).
               </div>
             </div>
 
@@ -315,13 +335,12 @@
                 <input type="checkbox" id="chkGenImages" checked />
                 <span class="note">이미지까지 생성/표시</span>
               </label>
-              <span class="badge"><b>팁</b><span>키 없으면 무료 이미지로 표시</span></span>
+              <button class="btn" id="btnTestPollinations">Pollinations 테스트</button>
             </div>
 
             <div class="note" style="margin-top:8px;">
-              • “선택” 버튼으로 주제를 지정한 뒤 “선택 주제로 생성”을 누르세요.<br>
-              • 이미지 체크 시: <b>OpenAI 키가 있으면 OpenAI 이미지</b>, 없으면 <b>무료 이미지(Pollinations)로 표시</b>합니다.<br>
-              • 무료 이미지 API는 서비스 사정에 따라 <b>속도/제한</b>이 있을 수 있어요(안 뜨면 잠시 후 재시도).
+              • 이미지가 안 보이면: (1) 우측에 Pollinations <b>pk_ 키 저장</b> → (2) 다시 생성<br>
+              • 이미지 카드에서 “새 탭으로 URL 열기”가 가능하며, 차단/실패 여부를 확인할 수 있습니다.
             </div>
           </div>
         </div>
@@ -341,16 +360,35 @@
             <h3>OpenAI API 키(수업용)</h3>
             <div class="note">
               • 키는 브라우저에 저장됩니다(localStorage).<br>
-              • 수업 데모 목적이 아니라면 <b>클라이언트에 키를 넣는 방식은 권장되지 않습니다.</b>
+              • 교육 데모 외에는 클라이언트에 키 저장을 권장하지 않습니다.
             </div>
             <div class="field">
-              <label>API Key 입력</label>
+              <label>OpenAI API Key</label>
               <input type="password" id="apiKeyInput" placeholder="sk-... (입력 후 저장)" />
             </div>
             <div class="row" style="margin-top:10px;">
               <button class="btn good" id="btnSaveKey">키 저장</button>
               <button class="btn danger" id="btnDeleteKey">키 삭제</button>
               <span class="badge" id="keyBadge"><b>미설정</b></span>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="mini">
+            <h3>Pollinations 키(권장: pk_...)</h3>
+            <div class="note">
+              • GitHub Pages에서도 이미지가 잘 뜨도록 <b>Pollinations pk_ 키</b> 사용을 권장합니다.<br>
+              • 이 키는 공개용(publishable)이라 프론트에 넣을 수 있지만, 수업용으로만 사용하세요.
+            </div>
+            <div class="field">
+              <label>Pollinations Key</label>
+              <input type="text" id="pollKeyInput" placeholder="pk_... (입력 후 저장)" />
+            </div>
+            <div class="row" style="margin-top:10px;">
+              <button class="btn good" id="btnSavePollKey">키 저장</button>
+              <button class="btn danger" id="btnDeletePollKey">키 삭제</button>
+              <span class="badge" id="pollBadge"><b>미설정</b></span>
             </div>
           </div>
 
@@ -367,16 +405,16 @@
             <h3>글 초안(이미지 삽입 위치 + 해시태그 포함)</h3>
             <textarea id="draftBox" class="mono" placeholder="선택한 주제로 생성된 글 초안이 여기에 표시됩니다." style="min-height:280px;"></textarea>
             <div class="note" style="margin-top:8px;">
-              • 초안에는 <span class="mono">[이미지 1: ...]</span> 처럼 삽입 위치가 표시됩니다.<br>
-              • 글 마지막에 해시태그가 자동으로 포함됩니다.
+              • 초안에는 <span class="mono">[이미지 n: ...]</span> 위치가 표시됩니다.<br>
+              • 글 마지막 <span class="mono">[해시태그]</span> 섹션이 자동 포함됩니다.
             </div>
           </div>
 
           <div class="hr"></div>
 
           <div class="mini">
-            <h3>이미지 결과(프롬프트는 본문 내용과 연동)</h3>
-            <div class="note">• 키가 없거나 이미지 생성이 실패하면 <b>무료 이미지(또는 프롬프트)</b>를 표시합니다.</div>
+            <h3>이미지 결과</h3>
+            <div class="note">• 이미지 로딩이 실패하면 카드에 “새 탭으로 URL 열기” 안내가 뜹니다.</div>
             <div id="imagesArea" style="margin-top:10px;">
               <div class="note">아직 생성된 이미지가 없습니다.</div>
             </div>
@@ -386,7 +424,7 @@
     </div>
   </div>
 
-  <!-- ===== 프롬프트 창(모달) UI ===== -->
+  <!-- ===== 프롬프트 창(모달) ===== -->
   <div id="promptModal">
     <div class="modalBox">
       <div class="modalHd">
@@ -400,31 +438,32 @@
 
       <div class="modalBd">
         <div>
-          <div class="note" style="margin-bottom:6px;"><b>프롬프트(학생이 AI와 협업할 질문)</b></div>
+          <div class="note" style="margin-bottom:6px;"><b>프롬프트</b></div>
           <textarea id="promptInput" placeholder="예: 아래 계획서를 바탕으로 3개월 콘텐츠 캘린더를 더 구체화해줘..."></textarea>
 
-          <div class="note" style="margin-top:10px;"><b>대화 기록(선택)</b> — 이전 답을 이어가고 싶으면 여기에 붙여넣기</div>
+          <div class="note" style="margin-top:10px;"><b>대화 기록(선택)</b></div>
           <textarea id="promptHistory" placeholder="(선택) 이전 대화 내용을 붙여넣으면 이어서 작업하기 쉬워요." style="min-height:140px;"></textarea>
 
           <div class="help" style="margin-top:10px;">
             <b>권장:</b> 결과를 JSON으로 받기<br>
-            <span class="mono">improvedPlan</span>, <span class="mono">calendar</span>, <span class="mono">draft</span>, <span class="mono">imagePrompts</span>, <span class="mono">hashtags</span>
+            <span class="mono">improvedPlan</span>, <span class="mono">calendar</span>, <span class="mono">draft</span>,
+            <span class="mono">imagePrompts</span>, <span class="mono">hashtags</span>
           </div>
         </div>
 
         <div>
-          <div class="note" style="margin-bottom:6px;"><b>AI 응답(JSON 권장)</b></div>
+          <div class="note" style="margin-bottom:6px;"><b>AI 응답(JSON)</b></div>
           <textarea id="aiOutput" class="mono" placeholder="AI 결과가 여기에 표시됩니다." style="min-height:410px;"></textarea>
 
           <div class="row" style="margin-top:10px;">
-            <button class="btn" id="btnApplyToPlan">결과를 ‘개선된 계획서’에 반영</button>
-            <button class="btn" id="btnApplyToCalendar">결과를 ‘캘린더’에 반영</button>
-            <button class="btn" id="btnApplyToDraft">결과를 ‘글 초안’에 반영</button>
+            <button class="btn" id="btnApplyToPlan">계획서 반영</button>
+            <button class="btn" id="btnApplyToCalendar">캘린더 반영</button>
+            <button class="btn" id="btnApplyToDraft">초안 반영</button>
             <button class="btn" id="btnCopyAIOutput">응답 복사</button>
           </div>
 
           <div class="note" style="margin-top:8px;">
-            팁: AI가 가끔 ```json``` 코드블록으로 주더라도 자동 파싱하도록 설계되어 있습니다.
+            • AI가 ```json``` 코드블록으로 답해도 자동 파싱합니다.
           </div>
         </div>
       </div>
@@ -451,6 +490,9 @@
 
   const apiKeyInput = $("#apiKeyInput");
   const keyBadge = $("#keyBadge");
+
+  const pollKeyInput = $("#pollKeyInput");
+  const pollBadge = $("#pollBadge");
 
   const promptModal = $("#promptModal");
   const promptInput = $("#promptInput");
@@ -479,10 +521,17 @@
   function getStoredKey(){
     return (localStorage.getItem("OPENAI_API_KEY") || "").trim();
   }
-  function refreshKeyBadge(){
+  function getPollinationsKey(){
+    return (localStorage.getItem("POLLINATIONS_KEY") || "").trim(); // pk_...
+  }
+
+  function refreshKeyBadges(){
     const k = getStoredKey();
     keyBadge.innerHTML = k ? "<b>설정됨</b>" : "<b>미설정</b>";
+    const pk = getPollinationsKey();
+    pollBadge.innerHTML = pk ? "<b>설정됨</b>" : "<b>미설정</b>";
   }
+
   function setModeUI(){
     modeBadge.textContent = (aiMode.value === "api") ? "API" : "DEMO";
   }
@@ -572,22 +621,37 @@
   });
 
   // ===== 키 저장/삭제 =====
-  refreshKeyBadge();
+  refreshKeyBadges();
+
   $("#btnSaveKey").addEventListener("click", ()=>{
     const v = (apiKeyInput.value || "").trim();
-    if(!v) return toast("API 키를 입력하세요.");
+    if(!v) return toast("OpenAI API 키를 입력하세요.");
     localStorage.setItem("OPENAI_API_KEY", v);
     apiKeyInput.value = "";
-    refreshKeyBadge();
-    toast("키를 저장했습니다.");
+    refreshKeyBadges();
+    toast("OpenAI 키를 저장했습니다.");
   });
   $("#btnDeleteKey").addEventListener("click", ()=>{
     localStorage.removeItem("OPENAI_API_KEY");
-    refreshKeyBadge();
-    toast("키를 삭제했습니다.");
+    refreshKeyBadges();
+    toast("OpenAI 키를 삭제했습니다.");
   });
 
-  // ===== DEMO JSON (핵심: schemaName으로 분기) =====
+  $("#btnSavePollKey").addEventListener("click", ()=>{
+    const v = (pollKeyInput.value || "").trim();
+    if(!v) return toast("Pollinations pk_ 키를 입력하세요.");
+    localStorage.setItem("POLLINATIONS_KEY", v);
+    pollKeyInput.value = "";
+    refreshKeyBadges();
+    toast("Pollinations 키를 저장했습니다.");
+  });
+  $("#btnDeletePollKey").addEventListener("click", ()=>{
+    localStorage.removeItem("POLLINATIONS_KEY");
+    refreshKeyBadges();
+    toast("Pollinations 키를 삭제했습니다.");
+  });
+
+  // ===== DEMO JSON (schemaName으로 분기) =====
   function demoJSON(schemaName){
     if(schemaName === "plan_and_calendar"){
       return {
@@ -604,19 +668,17 @@
           { week:"1주차", channel:"네이버 블로그", topic:"초보가 흔히 하는 AI 프롬프트 실수 5가지", format:"체크리스트", goal:"저장/공유" },
           { week:"2주차", channel:"네이버 블로그", topic:"블로그 제목을 10초 만에 뽑는 템플릿", format:"템플릿", goal:"유입" },
           { week:"2주차", channel:"네이버 블로그", topic:"이미지 프롬프트 예시 20선(썸네일)", format:"예시 모음", goal:"체류시간" }
-        ],
-        draft: "",
-        imagePrompts: [],
-        hashtags: []
+        ]
       };
     }
 
     if(schemaName === "draft_and_images"){
+      const hashtags = ["#AI", "#ChatGPT", "#블로그운영", "#콘텐츠기획", "#중장년AI", "#프롬프트", "#글쓰기팁", "#네이버블로그"];
       return {
         draft:
 `# (제목) AI로 글 아이디어 30개 뽑는 법 (초보용 3분 가이드)
 
-[이미지 1: 썸네일 배너 — 글 제목과 아이콘(로봇+연필)이 들어간 상단 배너]
+[이미지 1: 썸네일 배너 — 제목이 크게 들어가고 로봇+연필 아이콘이 있는 상단 배너(950x300 느낌)]
 
 ## 1) 오늘의 목표
 - AI에게 “내 블로그 주제에 맞는 글 아이디어 30개”를 뽑게 하고
@@ -638,45 +700,48 @@
 초보가 따라하기 좋은 글 아이디어 30개를 제목 형태로 리스트로 만들어줘.
 각 제목 옆에 추천 글 형식(튜토리얼/체크리스트/사례/템플릿)도 적어줘.”
 
-[이미지 3: 프롬프트 예시 카드 — 큰 글씨, 복사하기 좋은 카드 형태]
+[이미지 3: 프롬프트 예시 카드 — 복사하기 좋은 카드 디자인, 큰 글씨, 클립보드 아이콘]
 
 **3단계: 결과에서 10개만 먼저 선택**
-- 처음부터 완벽하게 고르지 말고, ‘지금 바로 쓸 수 있는 것’ 위주로 선택하세요.
+- ‘지금 바로 쓸 수 있는 것’부터 선택하세요.
 
 ## 4) 초보자 팁(실패 줄이는 법)
-- “너무 어려워요”라고 느껴지면: ‘대상을 더 구체화’하세요.
-- 예: “스마트폰만 하는 50~60대” 같이 구체적으로.
+- 어렵게 느껴지면 “대상”을 더 구체화하세요.
+- 예: “스마트폰만 하는 50~60대”처럼요.
 
 ## 5) 마무리(CTA)
 댓글로 “내 블로그 주제 1문장”을 남겨주시면,
 그 주제에 맞는 아이디어 10개를 더 뽑아드릴게요!
 
 [해시태그]
-#AI #ChatGPT #블로그운영 #콘텐츠기획 #중장년AI #프롬프트 #글쓰기팁`,
+${hashtags.join(" ")}`,
         imagePrompts: [
-          "950x300 블로그 썸네일 배너, 밝은 배경, 큰 제목 여백, 로봇+연필 아이콘, 미니멀 스타일, 상단 배너 구성, 한국어 제목을 넣기 좋은 레이아웃. 제목: 'AI로 글 아이디어 30개 뽑는 법'",
-          "3단계 인포그래픽, ①주제 한 줄 ②프롬프트 입력 ③10개 선택, 숫자 원형 아이콘, 깔끔한 라인, 초보 친화, 읽기 쉬운 레이아웃, 밝은 배경",
-          "프롬프트 예시 카드 디자인, 큰 글씨 영역, 복사하기 좋은 카드 형태, 체크 아이콘/클립보드 아이콘, 미니멀, 밝은 배경, 가독성 최우선"
+          "블로그 상단 썸네일 배너 느낌, 950x300 비율처럼 가로로 긴 구성, 밝은 배경, 큰 제목 여백, 로봇+연필 아이콘, 미니멀, 고급스러운 UI 느낌, 한국어 제목 넣기 좋은 레이아웃",
+          "3단계 인포그래픽, ①주제 한 줄 ②프롬프트 입력 ③10개 선택, 숫자 원형 아이콘, 깔끔한 라인, 초보 친화, 가독성 높은 레이아웃, 밝은 배경",
+          "프롬프트 예시 카드 디자인, 큰 글씨 영역, 복사하기 쉬운 카드, 클립보드 아이콘, 미니멀, 밝은 배경, 텍스트 가독성 최우선"
         ],
-        hashtags: ["#AI", "#ChatGPT", "#블로그운영", "#콘텐츠기획", "#중장년AI", "#프롬프트", "#글쓰기팁"]
+        hashtags
       };
     }
 
     return {
       draft: "【데모】요청을 받았습니다. API 모드로 전환하면 실제 AI 결과를 받을 수 있어요.\n\n[이미지 1: 썸네일]\n\n[해시태그]\n#AI #블로그",
-      imagePrompts: ["950x300 블로그 썸네일 배너, 미니멀, 큰 제목 여백, 밝은 배경"],
+      imagePrompts: ["블로그 썸네일 배너, 미니멀, 큰 제목 여백, 밝은 배경"],
       hashtags: ["#AI", "#블로그"]
     };
   }
 
-  // ===== OpenAI(텍스트/JSON) 호출: DEMO는 schema.name으로 분기 =====
+  // ===== OpenAI(텍스트/JSON) 호출 =====
   async function callOpenAI_JSON(systemPrompt, userPrompt, schema){
     const key = getStoredKey();
+
+    // DEMO면 schema.name으로 데모 생성
     if(aiMode.value !== "api"){
       const name = (schema && schema.name) ? schema.name : "";
       return demoJSON(name);
     }
-    if(!key) throw new Error("API 키가 없습니다. 오른쪽에서 키를 저장하세요.");
+
+    if(!key) throw new Error("OpenAI API 키가 없습니다. 오른쪽에서 키를 저장하세요.");
 
     const body = {
       model: "gpt-4.1-mini",
@@ -729,7 +794,7 @@
   async function callOpenAI_Images(prompts){
     const key = getStoredKey();
     if(aiMode.value !== "api") throw new Error("이미지 생성은 API 모드에서만 가능합니다.");
-    if(!key) throw new Error("API 키가 없습니다.");
+    if(!key) throw new Error("OpenAI API 키가 없습니다.");
 
     const results = [];
     for(const p of prompts){
@@ -765,23 +830,32 @@
     return results;
   }
 
-  // ===== 무료 이미지 API: Pollinations =====
-  function buildPollinationsUrl(prompt, { width=950, height=300, model="flux", seed=42, safe=true } = {}){
-    const base = `https://image.pollinations.ai/prompt/${encodeURIComponent(prompt)}`;
-    const qs = new URLSearchParams({
-      width: String(width),
-      height: String(height),
-      model,
-      seed: String(seed),
-      safe: safe ? "true" : "false"
-    });
+  // ===== Pollinations Unified (gen.pollinations.ai) =====
+  function compactPromptForUrl(p, maxLen = 220){
+    const s = String(p ?? "")
+      .replace(/\s+/g, " ")
+      .replace(/[“”]/g, '"')
+      .trim();
+    return s.length > maxLen ? s.slice(0, maxLen) : s;
+  }
+
+  function buildPollinationsUnifiedUrl(prompt, { model="flux" } = {}){
+    const pk = getPollinationsKey(); // pk_...
+    const base = `https://gen.pollinations.ai/image/${encodeURIComponent(prompt)}`;
+    const qs = new URLSearchParams({ model });
+    if(pk) qs.set("key", pk);
     return `${base}?${qs.toString()}`;
   }
-  async function callFreeImages_Pollinations(prompts, { width=950, height=300 } = {}){
-    return (prompts || []).map((p, i) => ({
-      prompt: p,
-      url: buildPollinationsUrl(p, { width, height, seed: 100 + i })
-    }));
+
+  async function callFreeImages_Pollinations(prompts, { model="flux" } = {}){
+    return (prompts || []).map((p, i) => {
+      const shortP = compactPromptForUrl(p, 220);
+      const url = buildPollinationsUnifiedUrl(shortP, { model });
+      const note = getPollinationsKey()
+        ? "Pollinations Unified로 표시"
+        : "Pollinations pk_ 키가 없으면 로딩이 실패할 수 있어요(우측에서 pk_ 키 저장 권장).";
+      return { prompt: p, url, note };
+    });
   }
 
   // ===== 캘린더 렌더 =====
@@ -840,7 +914,7 @@
       </div>`
     )).join("");
 
-    imagesArea.innerHTML = prompts && prompts.length
+    imagesArea.innerHTML = (prompts && prompts.length)
       ? `<div class="imgGrid">${list}</div>`
       : `<div class="note">생성된 이미지 프롬프트가 없습니다.</div>`;
   }
@@ -851,11 +925,19 @@
       const cap = x.prompt || (prompts && prompts[i]) || "";
       const note = x.note ? ("\n\n" + x.note) : "";
       if(!src){
-        return `<div class="imgCard"><div class="cap">${escapeHTML("이미지 출력 실패\n\n" + cap)}</div></div>`;
+        return `<div class="imgCard"><div class="cap">이미지 출력 실패\n\n${escapeHTML(cap)}</div></div>`;
       }
       return `
         <div class="imgCard">
-          <img src="${src}" alt="generated image" />
+          <img src="${src}" alt="generated image"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+          <div class="imgFallback">
+            이미지 로딩이 차단/실패했습니다.<br/>
+            (1) 우측 Pollinations pk_ 키 저장 후 재시도<br/>
+            (2) 아래 버튼으로 URL을 새 탭에서 열어 확인하세요.
+            <br/>
+            <a href="${src}" target="_blank" rel="noopener noreferrer">🔗 새 탭으로 URL 열기</a>
+          </div>
           <div class="cap">${escapeHTML(cap + note)}</div>
         </div>
       `;
@@ -866,7 +948,20 @@
       : `<div class="note">이미지 결과가 없습니다.</div>`;
   }
 
-  // ===== "AI로 계획서+캘린더 생성" =====
+  // ===== Pollinations 테스트 =====
+  $("#btnTestPollinations").addEventListener("click", async ()=>{
+    try{
+      imagesArea.innerHTML = '<div class="note">Pollinations 테스트 이미지 로딩 중...</div>';
+      const testPrompt = "simple minimal banner, robot icon and pencil icon, clean, bright background";
+      const url = buildPollinationsUnifiedUrl(compactPromptForUrl(testPrompt, 120), { model: "flux" });
+      renderImages([{ prompt: "TEST: " + testPrompt, url, note: getPollinationsKey() ? "pk_ 키 사용" : "pk_ 키 없음(권장: 우측에서 저장)" }], [testPrompt]);
+      toast("테스트 이미지를 시도했습니다. 이미지 카드에서 실패 시 URL 열기를 확인하세요.");
+    } catch(e){
+      toast("테스트 실패: " + (e.message || e));
+    }
+  });
+
+  // ===== 계획서+캘린더 생성 =====
   $("#btnMakePlanAndCalendar").addEventListener("click", async ()=>{
     const planText = (planInput.value || "").trim();
     if(!planText){
@@ -880,12 +975,12 @@
 
       const systemPrompt =
 `너는 중장년 초보자를 위한 AI 블로그 코치다.
-사용자가 작성한 블로그 운영 계획서를 읽고, 부족한 부분을 보완해 "개선된 계획서"와 "콘텐츠 캘린더"를 만들어라.
+사용자가 작성한 블로그 운영 계획서를 읽고 부족한 부분을 보완해 "개선된 계획서"와 "콘텐츠 캘린더"를 만들어라.
 반드시 JSON으로만 답하라.
 
 요구사항:
 - improvedPlan: 객체(블로그 방향/타깃/톤/콘텐츠 기둥/CTA/운영 팁 포함)
-- calendar: 배열(최소 8개 이상 권장), 각 원소는 {week, channel, topic, format, goal} 키를 포함`;
+- calendar: 배열(최소 8개 이상 권장), 각 원소는 {week, channel, topic, format, goal} 키 포함`;
 
       const userPrompt =
 `[학생 계획서 원문]
@@ -894,10 +989,10 @@ ${planText}
 [요청]
 1) 운영 계획서를 개선해 improvedPlan으로 정리
 2) 4~8주 분량의 콘텐츠 캘린더(calendar) 생성
-- 주차(week) 단위로 작성
-- topic은 구체적으로(제목 형태)
-- format(예: 튜토리얼/체크리스트/사례/템플릿 등)
-- goal(조회수/저장/공유/댓글/전환 등)
+- 주차(week) 단위
+- topic은 제목처럼 구체적으로
+- format(예: 튜토리얼/체크리스트/사례/템플릿)
+- goal(조회수/저장/공유/댓글/전환)
 
 JSON으로만 답해줘.`;
 
@@ -949,8 +1044,8 @@ JSON으로만 답해줘.`;
     }
   });
 
-  // ===== 선택 주제로 글/이미지 생성 (이미지삽입/해시태그 포함) =====
-  btnGenerateFromSelected.addEventListener("click", async ()=>{
+  // ===== 선택 주제로 글/이미지 생성 =====
+  $("#btnGenerateFromSelected").addEventListener("click", async ()=>{
     if(!state.selected){
       toast("먼저 캘린더에서 주제를 선택하세요.");
       return;
@@ -973,8 +1068,8 @@ JSON으로만 답해줘.`;
 
 출력 키:
 - draft: string (완성형 글 초안. 이미지 삽입 위치를 [이미지 n: ...] 형태로 표시)
-- imagePrompts: string[] (본문 내용과 일치하는 설명형 프롬프트 2~4개. 1번은 950x300 배너)
-- hashtags: string[] (글 내용 기반, 8~15개 권장. # 포함)`;
+- imagePrompts: string[] (본문 내용과 일치하는 설명형 프롬프트 2~4개. 1번은 950x300 배너 느낌)
+- hashtags: string[] (글 내용 기반, 8~15개 권장, # 포함)`;
 
       const userPrompt =
 `[컨텍스트 JSON]
@@ -1011,7 +1106,6 @@ JSON으로만 답해줘.`;
       const json = await callOpenAI_JSON(systemPrompt, userPrompt, schema);
       state.lastAI = json;
 
-      // draft / hashtags 반영
       draftBox.value = json.draft || "";
       state.lastHashtags = Array.isArray(json.hashtags) ? json.hashtags : [];
 
@@ -1019,21 +1113,23 @@ JSON으로만 답해줘.`;
       const doGenImages = $("#chkGenImages").checked;
       const hasOpenAIKey = !!getStoredKey();
 
-      // 이미지 표시: OpenAI 가능하면 OpenAI, 아니면 무료(Pollinations)
-      if (doGenImages && prompts.length) {
-        if (aiMode.value === "api" && hasOpenAIKey) {
-          try {
-            const imgs = await callOpenAI_Images(prompts.slice(0, 3));
-            renderImages(imgs, prompts);
-          } catch (imgErr) {
-            const freeImgs = await callFreeImages_Pollinations(prompts.slice(0, 3), { width: 950, height: 300 });
-            freeImgs[0].note = "※ OpenAI 이미지 생성 실패 → 무료 이미지(Pollinations)로 대체 표시";
-            renderImages(freeImgs, prompts);
+      if(doGenImages && prompts.length){
+        // 수업 운영 안정성을 위해 2장까지만 표시(원하면 3으로 변경)
+        const usePrompts = prompts.slice(0, 2);
+
+        if(aiMode.value === "api" && hasOpenAIKey){
+          try{
+            const imgs = await callOpenAI_Images(usePrompts);
+            renderImages(imgs, usePrompts);
+          } catch(imgErr){
+            const freeImgs = await callFreeImages_Pollinations(usePrompts, { model: "flux" });
+            if(freeImgs[0]) freeImgs[0].note = "※ OpenAI 이미지 실패 → Pollinations로 대체 표시\n" + (freeImgs[0].note || "");
+            renderImages(freeImgs, usePrompts);
           }
         } else {
-          const freeImgs = await callFreeImages_Pollinations(prompts.slice(0, 3), { width: 950, height: 300 });
-          freeImgs[0].note = "※ OpenAI 키 없음/DEMO → 무료 이미지(Pollinations)로 표시 (안 뜨면 잠시 후 재시도)";
-          renderImages(freeImgs, prompts);
+          const freeImgs = await callFreeImages_Pollinations(usePrompts, { model: "flux" });
+          if(freeImgs[0]) freeImgs[0].note = "※ DEMO/키 없음 → Pollinations로 표시\n" + (freeImgs[0].note || "");
+          renderImages(freeImgs, usePrompts);
         }
       } else {
         renderImagePromptsOnly(prompts);
@@ -1093,7 +1189,7 @@ JSON으로만 답해줘.`;
     try{
       await navigator.clipboard.writeText(aiOutput.value || "");
       toast("복사 완료");
-    }catch(e){
+    } catch(e){
       toast("복사 실패");
     }
   });
@@ -1144,7 +1240,7 @@ JSON으로만 답해줘.`;
 
   // 초기 UI
   setModeUI();
-  refreshKeyBadge();
+  refreshKeyBadges();
   setStatus("warn","아직 캘린더가 없습니다. “AI로 계획서+캘린더 생성”을 눌러주세요.");
 })();
 </script>
